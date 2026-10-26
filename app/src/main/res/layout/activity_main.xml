@@ -40,25 +40,47 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_student_name"
                 android:inputType="textPersonName"
-                android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .'-"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_secondary"
                 android:textSize="16sp"
                 android:minHeight="48dp" />
+
+            <!-- Warning label for Name (Red text) -->
+            <TextView
+                android:id="@+id/tvNameWarning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="⚠ Student Name tidak boleh mengandung angka!"
+                android:textColor="#D32F2F"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <!-- Student ID Input (Matching exam screenshot) -->
             <EditText
                 android:id="@+id/etStudentID"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:hint="@string/hint_student_id"
-                android:inputType="number"
-                android:digits="0123456789"
+                android:inputType="text"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_secondary"
                 android:textSize="16sp"
                 android:minHeight="48dp" />
+
+            <!-- Warning label for Student ID (Red text) -->
+            <TextView
+                android:id="@+id/tvIdWarning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="⚠ Student ID hanya boleh berupa angka (tidak boleh ada huruf)!"
+                android:textColor="#D32F2F"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <!-- Major Spinner (Matching exam screenshot dropdown) -->
             <LinearLayout

@@ -2,8 +2,10 @@ package com.example.midexam;
 
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.text.InputFilter;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -28,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText etStudentName;
     private EditText etStudentID;
+    private TextView tvNameWarning;
+    private TextView tvIdWarning;
+
     private Spinner spMajor;
     private Button btnAdd;
     private Button btnEdit;
@@ -42,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private List<Student> studentList;
     private StudentAdapter studentAdapter;
+
+    private static final int COLOR_ERROR = Color.parseColor("#D32F2F");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
         // Initialize UI Views
         initViews();
 
+        // Setup real-time red warning validation
+        setupInputValidationWatchers();
+
         // Setup Major Spinner with Informatics and Information Systems
         setupMajorSpinner();
 
@@ -74,29 +85,9 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         etStudentName = findViewById(R.id.etStudentName);
         etStudentID = findViewById(R.id.etStudentID);
+        tvNameWarning = findViewById(R.id.tvNameWarning);
+        tvIdWarning = findViewById(R.id.tvIdWarning);
         spMajor = findViewById(R.id.spMajor);
-
-        // Name input filter: prohibit any numeric digits
-        InputFilter nameFilter = (source, start, end, dest, dstart, dend) -> {
-            for (int i = start; i < end; i++) {
-                if (Character.isDigit(source.charAt(i))) {
-                    return "";
-                }
-            }
-            return null;
-        };
-        etStudentName.setFilters(new InputFilter[]{nameFilter});
-
-        // Student ID input filter: allow only numeric digits
-        InputFilter idFilter = (source, start, end, dest, dstart, dend) -> {
-            for (int i = start; i < end; i++) {
-                if (!Character.isDigit(source.charAt(i))) {
-                    return "";
-                }
-            }
-            return null;
-        };
-        etStudentID.setFilters(new InputFilter[]{idFilter});
 
         btnAdd = findViewById(R.id.btnAdd);
         btnEdit = findViewById(R.id.btnEdit);
@@ -111,6 +102,61 @@ public class MainActivity extends AppCompatActivity {
         studentList = new ArrayList<>();
         studentAdapter = new StudentAdapter(this, R.layout.item_student, studentList);
         lvStudents.setAdapter(studentAdapter);
+    }
+
+    /**
+     * Real-time listeners for instant red warning feedback:
+     * - If Student Name contains numbers -> Turns text red, shows warning text & error popup.
+     * - If Student ID contains letters/symbols -> Turns text red, shows warning text & error popup.
+     */
+    private void setupInputValidationWatchers() {
+        final int defaultTextColor = ContextCompat.getColor(this, R.color.text_primary);
+
+        // Watcher for Student Name
+        etStudentName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s != null ? s.toString() : "";
+                if (input.matches(".*\\d.*")) {
+                    etStudentName.setTextColor(COLOR_ERROR);
+                    tvNameWarning.setVisibility(View.VISIBLE);
+                    etStudentName.setError("Nama tidak boleh mengandung angka!");
+                } else {
+                    etStudentName.setTextColor(defaultTextColor);
+                    tvNameWarning.setVisibility(View.GONE);
+                    etStudentName.setError(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Watcher for Student ID
+        etStudentID.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s != null ? s.toString() : "";
+                if (!input.isEmpty() && !input.matches("\\d+")) {
+                    etStudentID.setTextColor(COLOR_ERROR);
+                    tvIdWarning.setVisibility(View.VISIBLE);
+                    etStudentID.setError("Student ID hanya boleh berisi angka!");
+                } else {
+                    etStudentID.setTextColor(defaultTextColor);
+                    tvIdWarning.setVisibility(View.GONE);
+                    etStudentID.setError(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void setupMajorSpinner() {
@@ -172,17 +218,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (name.matches(".*\\d.*")) {
-            Toast.makeText(this, "Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
+            etStudentName.setTextColor(COLOR_ERROR);
+            tvNameWarning.setVisibility(View.VISIBLE);
+            etStudentName.setError("Student Name cannot contain numbers!");
+            etStudentName.requestFocus();
+            Toast.makeText(this, "Warning: Student Name cannot contain numbers!", Toast.LENGTH_LONG).show();
             return;
         }
 
         if (!id.matches("\\d+")) {
-            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
+            etStudentID.setTextColor(COLOR_ERROR);
+            tvIdWarning.setVisibility(View.VISIBLE);
+            etStudentID.setError("Student ID must only contain numbers!");
+            etStudentID.requestFocus();
+            Toast.makeText(this, "Warning: Student ID must only contain numbers (no letters)!", Toast.LENGTH_LONG).show();
             return;
         }
 
         // Check Unique constraint before adding
         if (dbHelper.checkStudentExists(id)) {
+            etStudentID.setTextColor(COLOR_ERROR);
+            etStudentID.setError("Student ID must be UNIQUE!");
             Toast.makeText(this, "Error: Student ID '" + id + "' already exists! Student ID must be UNIQUE.", Toast.LENGTH_LONG).show();
             return;
         }
@@ -211,7 +267,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!id.matches("\\d+")) {
-            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
+            etStudentID.setTextColor(COLOR_ERROR);
+            tvIdWarning.setVisibility(View.VISIBLE);
+            etStudentID.setError("Student ID must only contain numbers!");
+            etStudentID.requestFocus();
+            Toast.makeText(this, "Warning: Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -221,7 +281,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (name.matches(".*\\d.*")) {
-            Toast.makeText(this, "Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
+            etStudentName.setTextColor(COLOR_ERROR);
+            tvNameWarning.setVisibility(View.VISIBLE);
+            etStudentName.setError("Student Name cannot contain numbers!");
+            etStudentName.requestFocus();
+            Toast.makeText(this, "Warning: Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -252,7 +316,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!id.matches("\\d+")) {
-            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
+            etStudentID.setTextColor(COLOR_ERROR);
+            tvIdWarning.setVisibility(View.VISIBLE);
+            etStudentID.setError("Student ID must only contain numbers!");
+            etStudentID.requestFocus();
+            Toast.makeText(this, "Warning: Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -328,11 +396,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Clears input fields and resets spinner.
+     * Clears input fields and resets spinner and warning indicators.
      */
     private void clearInputs() {
+        final int defaultTextColor = ContextCompat.getColor(this, R.color.text_primary);
+
         etStudentID.setText("");
+        etStudentID.setTextColor(defaultTextColor);
+        etStudentID.setError(null);
+        tvIdWarning.setVisibility(View.GONE);
+
         etStudentName.setText("");
+        etStudentName.setTextColor(defaultTextColor);
+        etStudentName.setError(null);
+        tvNameWarning.setVisibility(View.GONE);
+
         spMajor.setSelection(0);
         etStudentName.requestFocus();
     }
