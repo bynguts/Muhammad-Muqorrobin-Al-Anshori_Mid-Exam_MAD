@@ -123,11 +123,9 @@ public class MainActivity extends AppCompatActivity {
                 if (input.matches(".*\\d.*")) {
                     etStudentName.setTextColor(COLOR_ERROR);
                     tvNameWarning.setVisibility(View.VISIBLE);
-                    etStudentName.setError("Student Name cannot contain numbers!");
                 } else {
                     etStudentName.setTextColor(defaultTextColor);
                     tvNameWarning.setVisibility(View.GONE);
-                    etStudentName.setError(null);
                 }
             }
 
@@ -146,11 +144,9 @@ public class MainActivity extends AppCompatActivity {
                 if (!input.isEmpty() && !input.matches("\\d+")) {
                     etStudentID.setTextColor(COLOR_ERROR);
                     tvIdWarning.setVisibility(View.VISIBLE);
-                    etStudentID.setError("Student ID must contain only numbers!");
                 } else {
                     etStudentID.setTextColor(defaultTextColor);
                     tvIdWarning.setVisibility(View.GONE);
-                    etStudentID.setError(null);
                 }
             }
 
@@ -220,18 +216,14 @@ public class MainActivity extends AppCompatActivity {
         if (name.matches(".*\\d.*")) {
             etStudentName.setTextColor(COLOR_ERROR);
             tvNameWarning.setVisibility(View.VISIBLE);
-            etStudentName.setError("Student Name cannot contain numbers!");
             etStudentName.requestFocus();
-            Toast.makeText(this, "Warning: Student Name cannot contain numbers!", Toast.LENGTH_LONG).show();
             return;
         }
 
         if (!id.matches("\\d+")) {
             etStudentID.setTextColor(COLOR_ERROR);
             tvIdWarning.setVisibility(View.VISIBLE);
-            etStudentID.setError("Student ID must only contain numbers!");
             etStudentID.requestFocus();
-            Toast.makeText(this, "Warning: Student ID must only contain numbers (no letters)!", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -269,9 +261,7 @@ public class MainActivity extends AppCompatActivity {
         if (!id.matches("\\d+")) {
             etStudentID.setTextColor(COLOR_ERROR);
             tvIdWarning.setVisibility(View.VISIBLE);
-            etStudentID.setError("Student ID must only contain numbers!");
             etStudentID.requestFocus();
-            Toast.makeText(this, "Warning: Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -283,9 +273,7 @@ public class MainActivity extends AppCompatActivity {
         if (name.matches(".*\\d.*")) {
             etStudentName.setTextColor(COLOR_ERROR);
             tvNameWarning.setVisibility(View.VISIBLE);
-            etStudentName.setError("Student Name cannot contain numbers!");
             etStudentName.requestFocus();
-            Toast.makeText(this, "Warning: Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -318,9 +306,7 @@ public class MainActivity extends AppCompatActivity {
         if (!id.matches("\\d+")) {
             etStudentID.setTextColor(COLOR_ERROR);
             tvIdWarning.setVisibility(View.VISIBLE);
-            etStudentID.setError("Student ID must only contain numbers!");
             etStudentID.requestFocus();
-            Toast.makeText(this, "Warning: Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
