@@ -3,6 +3,7 @@ package com.example.midexam;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -75,6 +76,28 @@ public class MainActivity extends AppCompatActivity {
         etStudentID = findViewById(R.id.etStudentID);
         spMajor = findViewById(R.id.spMajor);
 
+        // Name input filter: prohibit any numeric digits
+        InputFilter nameFilter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                if (Character.isDigit(source.charAt(i))) {
+                    return "";
+                }
+            }
+            return null;
+        };
+        etStudentName.setFilters(new InputFilter[]{nameFilter});
+
+        // Student ID input filter: allow only numeric digits
+        InputFilter idFilter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                if (!Character.isDigit(source.charAt(i))) {
+                    return "";
+                }
+            }
+            return null;
+        };
+        etStudentID.setFilters(new InputFilter[]{idFilter});
+
         btnAdd = findViewById(R.id.btnAdd);
         btnEdit = findViewById(R.id.btnEdit);
         btnDelete = findViewById(R.id.btnDelete);
@@ -135,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Case 1: ADD student to SQLite.
-     * Enforces that Student ID is non-empty and UNIQUE.
+     * Enforces that Student ID is numeric, non-empty, and UNIQUE.
+     * Enforces that Student Name contains no numbers.
      */
     private void addStudent() {
         String name = etStudentName.getText().toString().trim();
@@ -144,6 +168,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (name.isEmpty() || id.isEmpty()) {
             Toast.makeText(this, "Please enter both Student Name and Student ID!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (name.matches(".*\\d.*")) {
+            Toast.makeText(this, "Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!id.matches("\\d+")) {
+            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -176,8 +210,18 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (!id.matches("\\d+")) {
+            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (name.isEmpty()) {
             Toast.makeText(this, "Please enter Student Name to update!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (name.matches(".*\\d.*")) {
+            Toast.makeText(this, "Student Name cannot contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -204,6 +248,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (id.isEmpty()) {
             Toast.makeText(this, "Please enter Student ID to delete!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!id.matches("\\d+")) {
+            Toast.makeText(this, "Student ID must only contain numbers!", Toast.LENGTH_SHORT).show();
             return;
         }
 
