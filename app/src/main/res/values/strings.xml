@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Student Management</string>
+    <string name="title_student_info">Student Information</string>
+    <string name="hint_student_name">Enter Student Name</string>
+    <string name="hint_student_id">Enter Student ID</string>
+    <string name="label_major">Major</string>
+    <string name="btn_add">ADD</string>
+    <string name="btn_edit">EDIT</string>
+    <string name="btn_delete">DELETE</string>
+    <string name="btn_view">VIEW</string>
+    <string name="btn_clear">CLEAR</string>
+    <string name="title_student_list">Student Records</string>
+    <string name="empty_records">No students registered yet.</string>
+
+    <string-array name="majors_array">
+        <item>Informatics</item>
+        <item>Information Systems</item>
+    </string-array>
+</resources>

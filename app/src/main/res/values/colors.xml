@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="accent">#00BCD4</color>
+    <color name="btn_add">#2E7D32</color>
+    <color name="btn_edit">#0288D1</color>
+    <color name="btn_delete">#D32F2F</color>
+    <color name="btn_view">#ED6C02</color>
+    <color name="bg_light">#F5F7FA</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#666666</color>
+</resources>
