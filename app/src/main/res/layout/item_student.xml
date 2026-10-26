@@ -3,54 +3,110 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="6dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="8dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
-    app:strokeColor="#DDDDDD"
+    app:strokeColor="#E0E0E0"
     app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="14dp">
 
-        <TextView
-            android:id="@+id/tvItemName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Student Name"
-            android:textColor="#212121"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
+        <!-- Top info section: Name & Major Badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvItemId"
+                android:id="@+id/tvItemName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="ID: 001202500093"
-                android:textColor="#555555"
-                android:textSize="14sp" />
+                android:text="Student Name"
+                android:textColor="#212121"
+                android:textSize="17sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvItemMajor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#E3F2FD"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/badge_major_bg"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="3dp"
                 android:text="Informatics"
                 android:textColor="#1565C0"
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <!-- Student ID text -->
+        <TextView
+            android:id="@+id/tvItemId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Student ID: 001202500093"
+            android:textColor="#666666"
+            android:textSize="14sp" />
+
+        <!-- Divider line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="10dp"
+            android:background="#EEEEEE" />
+
+        <!-- Action Buttons Row right inside the user card: EDIT & DELETE -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnItemEdit"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="EDIT"
+                android:textColor="#0288D1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:backgroundTint="#E1F5FE"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_edit"
+                app:iconPadding="4dp"
+                app:iconSize="16dp"
+                app:iconTint="#0288D1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnItemDelete"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="DELETE"
+                android:textColor="#D32F2F"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:backgroundTint="#FFEBEE"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_delete"
+                app:iconPadding="4dp"
+                app:iconSize="16dp"
+                app:iconTint="#D32F2F" />
+        </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

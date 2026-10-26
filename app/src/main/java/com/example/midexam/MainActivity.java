@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,11 +23,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.button.MaterialButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements StudentAdapter.OnStudentActionListener {
 
+    private TextView tvFormTitle;
+    private MaterialButton btnCancelEdit;
     private EditText etStudentName;
     private EditText etStudentID;
     private TextView tvNameWarning;
@@ -50,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private StudentAdapter studentAdapter;
 
     private static final int COLOR_ERROR = Color.parseColor("#D32F2F");
+    private boolean isEditMode = false;
+    private String editingStudentId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        tvFormTitle = findViewById(R.id.tvFormTitle);
+        btnCancelEdit = findViewById(R.id.btnCancelEdit);
+
         etStudentName = findViewById(R.id.etStudentName);
         etStudentID = findViewById(R.id.etStudentID);
         tvNameWarning = findViewById(R.id.tvNameWarning);
@@ -100,14 +108,15 @@ public class MainActivity extends AppCompatActivity {
         tvStudentCount = findViewById(R.id.tvStudentCount);
 
         studentList = new ArrayList<>();
-        studentAdapter = new StudentAdapter(this, R.layout.item_student, studentList);
+        // StudentAdapter with listener for in-card EDIT and DELETE actions
+        studentAdapter = new StudentAdapter(this, R.layout.item_student, studentList, this);
         lvStudents.setAdapter(studentAdapter);
     }
 
     /**
      * Real-time listeners for instant red warning feedback:
-     * - If Student Name contains numbers -> Turns text red, shows warning text & error popup.
-     * - If Student ID contains letters/symbols -> Turns text red, shows warning text & error popup.
+     * - If Student Name contains numbers -> Turns text red & shows clean red label below.
+     * - If Student ID contains letters/symbols -> Turns text red & shows clean red label below.
      */
     private void setupInputValidationWatchers() {
         final int defaultTextColor = ContextCompat.getColor(this, R.color.text_primary);
@@ -166,14 +175,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupActionListeners() {
-        // ADD Button: Insert new student record
-        btnAdd.setOnClickListener(v -> addStudent());
+        // ADD Button: If in edit mode, it saves updates; if in add mode, inserts new student.
+        btnAdd.setOnClickListener(v -> {
+            if (isEditMode) {
+                saveEditStudent();
+            } else {
+                addStudent();
+            }
+        });
 
-        // EDIT Button: Update existing student record by Student ID
-        btnEdit.setOnClickListener(v -> editStudent());
+        // EDIT Button: Save updates if in edit mode or edits student based on entered ID
+        btnEdit.setOnClickListener(v -> saveEditStudent());
 
         // DELETE Button: Remove student record by Student ID
-        btnDelete.setOnClickListener(v -> deleteStudent());
+        btnDelete.setOnClickListener(v -> deleteStudentById(etStudentID.getText().toString().trim(), null));
 
         // VIEW Button: Display all student records in an AlertDialog and refresh list
         btnView.setOnClickListener(v -> viewStudents());
@@ -181,21 +196,60 @@ public class MainActivity extends AppCompatActivity {
         // CLEAR Button: Reset input fields
         btnClear.setOnClickListener(v -> clearInputs());
 
-        // List item click: Populate fields for easy editing / deleting
+        // Cancel Edit button
+        btnCancelEdit.setOnClickListener(v -> cancelEditMode());
+
+        // Tapping card also triggers edit mode
         lvStudents.setOnItemClickListener((parent, view, position, id) -> {
             Student selected = studentList.get(position);
             if (selected != null) {
-                etStudentID.setText(selected.getId());
-                etStudentName.setText(selected.getName());
-
-                // Set spinner selection
-                setSpinnerToMajor(selected.getMajor());
-
-                Toast.makeText(MainActivity.this,
-                        "Selected: " + selected.getName() + " (" + selected.getId() + ")",
-                        Toast.LENGTH_SHORT).show();
+                onEdit(selected);
             }
         });
+    }
+
+    /**
+     * Interface callback: Direct EDIT action clicked on student card.
+     */
+    @Override
+    public void onEdit(Student student) {
+        if (student == null) return;
+        isEditMode = true;
+        editingStudentId = student.getId();
+
+        tvFormTitle.setText("✏️ Edit Student (ID: " + student.getId() + ")");
+        btnCancelEdit.setVisibility(View.VISIBLE);
+
+        etStudentID.setText(student.getId());
+        etStudentID.setEnabled(false); // Lock ID during edit as it's the UNIQUE primary key
+
+        etStudentName.setText(student.getName());
+        setSpinnerToMajor(student.getMajor());
+
+        btnAdd.setText("UPDATE");
+        etStudentName.requestFocus();
+        etStudentName.setSelection(etStudentName.getText().length());
+
+        Toast.makeText(this, "Editing " + student.getName(), Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Interface callback: Direct DELETE action clicked on student card.
+     */
+    @Override
+    public void onDelete(Student student) {
+        if (student == null) return;
+        deleteStudentById(student.getId(), student.getName());
+    }
+
+    private void cancelEditMode() {
+        isEditMode = false;
+        editingStudentId = null;
+        tvFormTitle.setText("Add New Student");
+        btnCancelEdit.setVisibility(View.GONE);
+        etStudentID.setEnabled(true);
+        btnAdd.setText(R.string.btn_add);
+        clearInputs();
     }
 
     /**
@@ -230,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
         // Check Unique constraint before adding
         if (dbHelper.checkStudentExists(id)) {
             etStudentID.setTextColor(COLOR_ERROR);
-            etStudentID.setError("Student ID must be UNIQUE!");
+            tvIdWarning.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Error: Student ID '" + id + "' already exists! Student ID must be UNIQUE.", Toast.LENGTH_LONG).show();
             return;
         }
@@ -246,10 +300,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Case 1: EDIT student in SQLite based on Student ID.
+     * Case 1: EDIT / UPDATE student in SQLite based on Student ID.
      */
-    private void editStudent() {
-        String id = etStudentID.getText().toString().trim();
+    private void saveEditStudent() {
+        String id = isEditMode && editingStudentId != null ? editingStudentId : etStudentID.getText().toString().trim();
         String name = etStudentName.getText().toString().trim();
         String major = spMajor.getSelectedItem() != null ? spMajor.getSelectedItem().toString() : "";
 
@@ -285,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isUpdated = dbHelper.updateStudent(id, name, major);
         if (isUpdated) {
             Toast.makeText(this, "Student updated successfully!", Toast.LENGTH_SHORT).show();
-            clearInputs();
+            cancelEditMode();
             loadStudentData();
         } else {
             Toast.makeText(this, "Failed to update student.", Toast.LENGTH_SHORT).show();
@@ -295,11 +349,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Case 1: DELETE student from SQLite based on Student ID.
      */
-    private void deleteStudent() {
-        String id = etStudentID.getText().toString().trim();
-
-        if (id.isEmpty()) {
-            Toast.makeText(this, "Please enter Student ID to delete!", Toast.LENGTH_SHORT).show();
+    private void deleteStudentById(String id, String optionalName) {
+        if (id == null || id.isEmpty()) {
+            Toast.makeText(this, "Please enter or select a Student ID to delete!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -315,14 +367,20 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        String displayName = optionalName != null && !optionalName.isEmpty() ? optionalName : ("ID: " + id);
+
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Delete")
-                .setMessage("Are you sure you want to delete student with ID: " + id + "?")
+                .setMessage("Are you sure you want to delete " + displayName + "?")
                 .setPositiveButton("DELETE", (dialog, which) -> {
                     boolean isDeleted = dbHelper.deleteStudent(id);
                     if (isDeleted) {
                         Toast.makeText(MainActivity.this, "Student deleted successfully!", Toast.LENGTH_SHORT).show();
-                        clearInputs();
+                        if (isEditMode && id.equals(editingStudentId)) {
+                            cancelEditMode();
+                        } else {
+                            clearInputs();
+                        }
                         loadStudentData();
                     } else {
                         Toast.makeText(MainActivity.this, "Failed to delete student.", Toast.LENGTH_SHORT).show();
