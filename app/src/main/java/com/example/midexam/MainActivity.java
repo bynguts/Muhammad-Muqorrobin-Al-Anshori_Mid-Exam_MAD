@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 if (input.matches(".*\\d.*")) {
                     etStudentName.setTextColor(COLOR_ERROR);
                     tvNameWarning.setVisibility(View.VISIBLE);
-                    etStudentName.setError("Nama tidak boleh mengandung angka!");
+                    etStudentName.setError("Student Name cannot contain numbers!");
                 } else {
                     etStudentName.setTextColor(defaultTextColor);
                     tvNameWarning.setVisibility(View.GONE);
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!input.isEmpty() && !input.matches("\\d+")) {
                     etStudentID.setTextColor(COLOR_ERROR);
                     tvIdWarning.setVisibility(View.VISIBLE);
-                    etStudentID.setError("Student ID hanya boleh berisi angka!");
+                    etStudentID.setError("Student ID must contain only numbers!");
                 } else {
                     etStudentID.setTextColor(defaultTextColor);
                     tvIdWarning.setVisibility(View.GONE);
